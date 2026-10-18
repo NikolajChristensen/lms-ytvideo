@@ -1,0 +1,84 @@
+PLUGIN_YOUTUBEVIDEO
+	EN	YouTube Video
+
+PLUGIN_YOUTUBEVIDEO_DESC
+	EN	Browse your YouTube subscriptions, home feed, Watch Later and playlists, and listen to the audio of videos
+
+PLUGIN_YOUTUBEVIDEO_HOME
+	EN	Home
+
+PLUGIN_YOUTUBEVIDEO_SUBSCRIPTIONS
+	EN	Subscriptions
+
+PLUGIN_YOUTUBEVIDEO_WATCH_LATER
+	EN	Watch Later
+
+PLUGIN_YOUTUBEVIDEO_LIKED
+	EN	Liked videos
+
+PLUGIN_YOUTUBEVIDEO_PLAYLISTS
+	EN	Playlists
+
+PLUGIN_YOUTUBEVIDEO_HISTORY
+	EN	History
+
+PLUGIN_YOUTUBEVIDEO_EMPTY
+	EN	Nothing here
+
+PLUGIN_YOUTUBEVIDEO_NOT_SIGNED_IN
+	EN	Not signed in - add your YouTube sign-in in Settings > Advanced > YouTube Video (or sign in the YouTube Music plugin)
+
+PLUGIN_YOUTUBEVIDEO_AUTH_EXPIRED
+	EN	YouTube did not accept the sign-in - paste fresh headers in the settings
+
+PLUGIN_YOUTUBEVIDEO_HELPER_DOWN
+	EN	The YouTube Video helper is not running - see the plugin settings
+
+PLUGIN_YOUTUBEVIDEO_ERROR
+	EN	Could not load this list:
+
+PLUGIN_YOUTUBEVIDEO_STATUS
+	EN	Status
+
+PLUGIN_YOUTUBEVIDEO_STATUS_DESC
+	EN	The plugin's helper program and the tools it uses. yt-dlp is updated automatically once a day, because YouTube changes often break older versions; use the button to update now.
+
+PLUGIN_YOUTUBEVIDEO_LOADING
+	EN	Loading...
+
+PLUGIN_YOUTUBEVIDEO_UPDATE_YTDLP
+	EN	Update yt-dlp now
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN
+	EN	YouTube sign-in
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN_DESC
+	EN	Leave this empty to use the sign-in of the YouTube Music plugin, if it is installed. To use another sign-in (or if you don't use the YouTube Music plugin): open youtube.com or music.youtube.com in your browser while signed in, press F12 and open the Network tab, type browse in the filter and click Home so requests appear. Click a POST browse request and copy all of its Request headers (Chrome: select them from the first line to the last; Firefox: switch on Raw and copy). Only the cookie and X-Goog-AuthUser are used.
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN_OWN
+	EN	Using the sign-in below
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN_MUSIC
+	EN	Using the YouTube Music plugin's sign-in
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN_NONE
+	EN	Not signed in
+
+PLUGIN_YOUTUBEVIDEO_SIGNIN_PLACEHOLDER
+	EN	Paste request headers here, or leave empty to use the YouTube Music plugin's sign-in
+
+PLUGIN_YOUTUBEVIDEO_SHORTS
+	EN	Shorts
+
+PLUGIN_YOUTUBEVIDEO_SHORTS_DESC
+	EN	YouTube Shorts are hidden from the lists by default.
+
+PLUGIN_YOUTUBEVIDEO_SHORTS_LABEL
+	EN	Show Shorts
+
+PLUGIN_YOUTUBEVIDEO_PORT
+	EN	Helper port
+
+PLUGIN_YOUTUBEVIDEO_PORT_DESC
+	EN	Local port of the plugin's helper program (default 9877; the YouTube Music plugin uses 9876). It only accepts connections from this computer.
+

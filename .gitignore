@@ -1,0 +1,4 @@
+Plugins/YouTubeVideo/__pycache__/
+*.pyc
+*.zip
+dist/

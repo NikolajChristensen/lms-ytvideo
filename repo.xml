@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<extensions>
+  <details>
+    <title lang="EN">YouTube Video for LMS</title>
+  </details>
+  <plugins>
+    <plugin name="YouTubeVideo" version="0.1.0" minTarget="9.0" maxTarget="*">
+      <title lang="EN">YouTube Video</title>
+      <desc lang="EN">Browse your YouTube subscriptions, home feed, Watch Later and playlists, and listen to the audio of videos on your Squeezebox players.</desc>
+      <changes lang="EN">First version: Home, Subscriptions, Watch Later, Liked videos, Playlists and History, with seeking.</changes>
+      <creator>NikolajChristensen</creator>
+      <category>musicservices</category>
+      <url>https://github.com/NikolajChristensen/lms-ytvideo/releases/download/v0.1.0/YouTubeVideo-0.1.0.zip</url>
+      <sha>0000000000000000000000000000000000000000</sha>
+    </plugin>
+  </plugins>
+</extensions>

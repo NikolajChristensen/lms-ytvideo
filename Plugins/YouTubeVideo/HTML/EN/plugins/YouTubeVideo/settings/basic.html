@@ -1,0 +1,76 @@
+[% pagetitle = 'PLUGIN_YOUTUBEVIDEO' %]
+[% PROCESS settings/header.html %]
+
+  [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_STATUS" desc="PLUGIN_YOUTUBEVIDEO_STATUS_DESC" %]
+    <div id="ytvStatus">[% "PLUGIN_YOUTUBEVIDEO_LOADING" | string %]</div>
+    <div style="margin-top:6px;">
+      <button type="button" id="ytvUpdate" onclick="ytvUpdateYtdlp()">[% "PLUGIN_YOUTUBEVIDEO_UPDATE_YTDLP" | string %]</button>
+      <span id="ytvUpdateResult" style="margin-left:8px;"></span>
+    </div>
+    <script>
+    function ytvText(s) { return document.createTextNode(s); }
+    function ytvLine(label, value, ok) {
+        var div = document.createElement('div');
+        var b = document.createElement('b');
+        b.appendChild(ytvText(label + ': '));
+        div.appendChild(b);
+        var span = document.createElement('span');
+        span.style.color = ok ? 'green' : 'red';
+        span.appendChild(ytvText(value));
+        div.appendChild(span);
+        return div;
+    }
+    function ytvLoadStatus() {
+        var el = document.getElementById('ytvStatus');
+        fetch('/plugins/YouTubeVideo/proxy/status')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                el.textContent = '';
+                if (d.error) { el.appendChild(ytvLine('Helper', d.error, false)); return; }
+                el.appendChild(ytvLine('Helper', 'running (' + d.version + ')', true));
+                el.appendChild(ytvLine('yt-dlp', d.ytdlp ? d.ytdlp + (d.ytdlp_source == 'own' ? ' (kept up to date automatically)' : ' (system copy)') : 'not available', !!d.ytdlp));
+                el.appendChild(ytvLine('Node.js', d.node || 'not found - many videos will not play', !!d.node));
+                el.appendChild(ytvLine('ffmpeg', d.ffmpeg || 'not found - install ffmpeg', !!d.ffmpeg));
+                el.appendChild(ytvLine('Signed in', d.signed_in ? 'yes' + (d.brand_account ? ' (brand account)' : '') : 'no', d.signed_in));
+                if (d.restart_pending) el.appendChild(ytvLine('Note', 'a new yt-dlp is loaded when nothing is playing', true));
+            })
+            .catch(function() { el.textContent = ''; el.appendChild(ytvLine('Helper', 'not running', false)); });
+    }
+    function ytvUpdateYtdlp() {
+        var btn = document.getElementById('ytvUpdate');
+        var res = document.getElementById('ytvUpdateResult');
+        btn.disabled = true;
+        res.textContent = '...';
+        fetch('/plugins/YouTubeVideo/proxy/update_ytdlp')
+            .then(function(r) { return r.json(); })
+            .then(function(d) { res.textContent = d.message || d.error || ''; btn.disabled = false; ytvLoadStatus(); })
+            .catch(function(e) { res.textContent = String(e); btn.disabled = false; });
+    }
+    ytvLoadStatus();
+    </script>
+  [% END %]
+
+  [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_SIGNIN" desc="PLUGIN_YOUTUBEVIDEO_SIGNIN_DESC" %]
+    <div style="margin-bottom:6px;">
+    [% IF headers_source == 'own' %]
+      <span style="color:green;font-weight:bold;">[% "PLUGIN_YOUTUBEVIDEO_SIGNIN_OWN" | string %]</span>
+    [% ELSIF headers_source == 'music' %]
+      <span style="color:green;font-weight:bold;">[% "PLUGIN_YOUTUBEVIDEO_SIGNIN_MUSIC" | string %]</span>
+    [% ELSE %]
+      <span style="color:#b00;font-weight:bold;">[% "PLUGIN_YOUTUBEVIDEO_SIGNIN_NONE" | string %]</span>
+    [% END %]
+    </div>
+    <textarea name="pref_headers" rows="4" style="width:100%;font-family:monospace;font-size:0.8em;resize:vertical;"
+              placeholder="[% "PLUGIN_YOUTUBEVIDEO_SIGNIN_PLACEHOLDER" | string %]">[% prefs.headers | html %]</textarea>
+  [% END %]
+
+  [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_SHORTS" desc="PLUGIN_YOUTUBEVIDEO_SHORTS_DESC" %]
+    <input type="checkbox" name="pref_show_shorts" id="pref_show_shorts" value="1" [% IF prefs.show_shorts %]checked[% END %] />
+    <label for="pref_show_shorts">[% "PLUGIN_YOUTUBEVIDEO_SHORTS_LABEL" | string %]</label>
+  [% END %]
+
+  [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_PORT" desc="PLUGIN_YOUTUBEVIDEO_PORT_DESC" %]
+    <input type="number" name="pref_proxy_port" value="[% prefs.proxy_port %]" min="1024" max="65535" style="width:6em;" />
+  [% END %]
+
+[% PROCESS settings/footer.html %]
