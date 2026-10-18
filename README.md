@@ -94,3 +94,7 @@ tools/release.sh 0.1.1 --publish      # ...then commit, tag, push and create the
 Built on what was learned in schmij97's
 [YouTube Music plugin](https://github.com/schmij97/lms-ytmusic): the helper
 architecture, the pasted-headers sign-in and many playback fixes.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
