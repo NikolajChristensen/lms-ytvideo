@@ -2,7 +2,7 @@
 <extension>
     <name>PLUGIN_YOUTUBEVIDEO</name>
     <module>Plugins::YouTubeVideo::Plugin</module>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <description>PLUGIN_YOUTUBEVIDEO_DESC</description>
     <icon>plugins/YouTubeVideo/html/YouTubeVideo_svg.png</icon>
     <iconsvg>plugins/YouTubeVideo/html/YouTubeVideo.svg</iconsvg>
