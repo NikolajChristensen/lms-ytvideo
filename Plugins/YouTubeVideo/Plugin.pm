@@ -44,6 +44,7 @@ sub initPlugin {
         proxy_port  => 9877,
         headers     => '',
         show_shorts => 0,
+        levelling   => 1,
     });
 
     Slim::Player::ProtocolHandlers->registerHandler(ytv => 'Plugins::YouTubeVideo::ProtocolHandler');
@@ -99,6 +100,7 @@ sub startHelper {
         '--port',     $prefs->get('proxy_port') || 9877,
         '--data-dir', preferences('server')->get('cachedir'),
         ($prefs->get('show_shorts') ? '--show-shorts' : ()),
+        ($prefs->get('levelling') ? () : '--no-levelling'),
     );
     $sentHeaders = headers();
     $log->info("Starting helper: @args");

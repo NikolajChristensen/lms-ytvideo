@@ -27,6 +27,12 @@ sub handler {
             Plugins::YouTubeVideo::API->setOptions({ show_shorts => $shorts });
         }
 
+        my $levelling = $params->{pref_levelling} ? 1 : 0;
+        if ($levelling != ($prefs->get('levelling') ? 1 : 0)) {
+            $prefs->set('levelling', $levelling);
+            Plugins::YouTubeVideo::API->setOptions({ levelling => $levelling });
+        }
+
         my $port = int($params->{pref_proxy_port} || 9877);
         $port = 9877 unless $port >= 1024 && $port <= 65535;
         if ($port != ($prefs->get('proxy_port') || 9877)) {
@@ -40,6 +46,7 @@ sub handler {
 
     $params->{prefs}{headers}     = $prefs->get('headers');
     $params->{prefs}{show_shorts} = $prefs->get('show_shorts');
+    $params->{prefs}{levelling}   = $prefs->get('levelling');
     $params->{prefs}{proxy_port}  = $prefs->get('proxy_port') || 9877;
     $params->{headers_source}     = Plugins::YouTubeVideo::Plugin::headersSource();
 

@@ -31,7 +31,8 @@
                 el.appendChild(ytvLine('yt-dlp', d.ytdlp ? d.ytdlp + (d.ytdlp_source == 'own' ? ' (kept up to date automatically)' : ' (system copy)') : 'not available', !!d.ytdlp));
                 el.appendChild(ytvLine('Node.js', d.node || 'not found - many videos will not play', !!d.node));
                 el.appendChild(ytvLine('ffmpeg', d.ffmpeg || 'not found - install ffmpeg', !!d.ffmpeg));
-                el.appendChild(ytvLine('Signed in', d.signed_in ? 'yes' + (d.brand_account ? ' (brand account)' : '') : 'no', d.signed_in));
+                el.appendChild(ytvLine('Signed in', d.signed_in ? 'yes' + (d.brand_account ? ' (brand account)' : '')
+                    : d.sign_in_rejected ? 'no - YouTube no longer accepts the sign-in; paste fresh headers' : 'no', d.signed_in));
                 if (d.restart_pending) el.appendChild(ytvLine('Note', 'a new yt-dlp is loaded when nothing is playing', true));
             })
             .catch(function() { el.textContent = ''; el.appendChild(ytvLine('Helper', 'not running', false)); });
@@ -62,6 +63,11 @@
     </div>
     <textarea name="pref_headers" rows="4" style="width:100%;font-family:monospace;font-size:0.8em;resize:vertical;"
               placeholder="[% "PLUGIN_YOUTUBEVIDEO_SIGNIN_PLACEHOLDER" | string %]">[% prefs.headers | html %]</textarea>
+  [% END %]
+
+  [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_LEVELLING" desc="PLUGIN_YOUTUBEVIDEO_LEVELLING_DESC" %]
+    <input type="checkbox" name="pref_levelling" id="pref_levelling" value="1" [% IF prefs.levelling %]checked[% END %] />
+    <label for="pref_levelling">[% "PLUGIN_YOUTUBEVIDEO_LEVELLING_LABEL" | string %]</label>
   [% END %]
 
   [% WRAPPER setting title="PLUGIN_YOUTUBEVIDEO_SHORTS" desc="PLUGIN_YOUTUBEVIDEO_SHORTS_DESC" %]

@@ -29,7 +29,7 @@ PLUGIN_YOUTUBEVIDEO_NOT_SIGNED_IN
 	EN	Not signed in - add your YouTube sign-in in Settings > Advanced > YouTube Video (or sign in the YouTube Music plugin)
 
 PLUGIN_YOUTUBEVIDEO_AUTH_EXPIRED
-	EN	YouTube did not accept the sign-in - paste fresh headers in the settings
+	EN	YouTube no longer accepts the sign-in - paste fresh headers in the YouTube Music or YouTube Video settings (tip: copy them from a private browser window, then close it)
 
 PLUGIN_YOUTUBEVIDEO_HELPER_DOWN
 	EN	The YouTube Video helper is not running - see the plugin settings
@@ -66,6 +66,15 @@ PLUGIN_YOUTUBEVIDEO_SIGNIN_NONE
 
 PLUGIN_YOUTUBEVIDEO_SIGNIN_PLACEHOLDER
 	EN	Paste request headers here, or leave empty to use the YouTube Music plugin's sign-in
+
+PLUGIN_YOUTUBEVIDEO_LEVELLING
+	EN	Volume levelling
+
+PLUGIN_YOUTUBEVIDEO_LEVELLING_DESC
+	EN	Evens out loudness, both between videos and within a video (a quiet guest, a loud intro), so you don't have to keep adjusting the volume. Made for speech: it smooths out some of the dynamics of music. Near-silence such as pauses and room noise is left alone. Applies to videos started after saving.
+
+PLUGIN_YOUTUBEVIDEO_LEVELLING_LABEL
+	EN	Level the volume
 
 PLUGIN_YOUTUBEVIDEO_SHORTS
 	EN	Shorts

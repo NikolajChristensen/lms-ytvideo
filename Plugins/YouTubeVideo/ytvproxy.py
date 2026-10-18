@@ -34,7 +34,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 # Set from --data-dir (LMS cache dir) in main(); everything we download or
@@ -326,6 +326,9 @@ def _restart_when_idle():
 # ── Sign-in ──────────────────────────────────────────────────────────────────
 
 _auth = {"cookie": None, "authuser": "0", "pageid": None, "raw": None}
+# Set when YouTube stops accepting the cookie (see _YdlLogger). YouTube then
+# answers as if logged out: feeds come back empty rather than with an error.
+_auth_rejected = threading.Event()
 _auth_lock = threading.Lock()
 
 
@@ -410,6 +413,7 @@ def set_auth(raw):
     cookie = parsed["cookie"]
     signed_in = bool(cookie and re.search(r"(?:^|;\s*)(?:__Secure-3PAPISID|SAPISID)=", cookie))
     with _auth_lock:
+        _auth_rejected.clear()
         if signed_in:
             _write_cookie_file(cookie)
             _auth.update(parsed, raw=raw)
@@ -469,6 +473,11 @@ class _YdlLogger:
         pass
 
     def warning(self, msg):
+        if "cookies are no longer valid" in msg:
+            if not _auth_rejected.is_set():
+                logging.warning("YouTube no longer accepts the sign-in cookie (rotated or signed out)")
+            _auth_rejected.set()
+            return
         logging.info("yt-dlp: %s", msg)
 
     def error(self, msg):
@@ -600,6 +609,8 @@ def _listing(key, fetch, refresh=False, ttl=_STABLE_TTL):
     entry = _STABLE.get(key)
     if entry and not refresh and time.time() - entry[0] < ttl:
         return entry[1]
+    if _auth_rejected.is_set() and signed_in():
+        return {"error": "auth_expired"}
     try:
         value = fetch()
     except Exception as e:
@@ -607,6 +618,10 @@ def _listing(key, fetch, refresh=False, ttl=_STABLE_TTL):
         if _auth_error(e):
             return {"error": "not_authenticated" if not signed_in() else "auth_expired"}
         return {"error": re.sub(r"^ERROR:\s*", "", str(e))[:300]}
+    if _auth_rejected.is_set() and signed_in():
+        return {"error": "auth_expired"}
+    if not value["items"]:
+        return value               # not kept: may be a passing hiccup
     _STABLE[key] = (time.time(), value)
     if len(_STABLE) > 100:
         for k, _ in sorted(_STABLE.items(), key=lambda kv: kv[1][0])[:30]:
@@ -713,6 +728,42 @@ def video_info(video_id):
     res = resolve(video_id)
     return {"type": "video", "id": video_id, **{k: res[k] for k in ("title", "channel", "duration", "thumbnail")}}
 
+# ── Volume levelling ─────────────────────────────────────────────────────────
+
+# Talks and podcasts differ a lot in loudness, between videos and inside them
+# (a quiet guest, a loud intro). ffmpeg's dynaudnorm evens that out as it
+# encodes: it looks at the level over a sliding window of about 15 s (31
+# frames of 500 ms, centred, so it sees what is coming) and turns each part
+# up or down towards a common level, smoothly. Almost no extra CPU.
+#   targetrms - aim at an average level, not just at the peaks, so videos
+#               end up at a similar loudness
+#   maxgain   - never lift more than 6x (about +16 dB)
+#   threshold - leave near-silence alone (pauses, room tone, hiss) instead
+#               of lifting it
+_levelling = True
+LEVEL_OPTS = {"framelen": 500, "gausssize": 31, "peak": 0.9, "targetrms": 0.12,
+              "maxgain": 6, "threshold": 0.004}
+_level_filter = None       # set at start from what this ffmpeg supports
+
+
+def _init_level_filter():
+    """dynaudnorm with the options this ffmpeg knows (older builds lack
+    some, and an unknown option would make every stream fail)."""
+    global _level_filter
+    try:
+        out = subprocess.run([_find_ffmpeg(), "-hide_banner", "-h", "filter=dynaudnorm"],
+                             capture_output=True, text=True, timeout=15).stdout
+    except Exception:
+        out = ""
+    if "dynaudnorm" not in out:
+        logging.warning("ffmpeg has no dynaudnorm filter; volume levelling unavailable")
+        return
+    known = {k: v for k, v in LEVEL_OPTS.items() if re.search(rf"^\s+{k}\s", out, re.M)}
+    missing = set(LEVEL_OPTS) - set(known)
+    if missing:
+        logging.warning("ffmpeg's dynaudnorm lacks %s; levelling without them", ", ".join(sorted(missing)))
+    _level_filter = "dynaudnorm=" + ":".join(f"{k}={v}" for k, v in known.items())
+
 # ── Streaming ────────────────────────────────────────────────────────────────
 
 def _ffmpeg_cmd(source_url, offset):
@@ -723,6 +774,8 @@ def _ffmpeg_cmd(source_url, offset):
         cmd += ["-ss", f"{offset:.3f}"]
     cmd += ["-i", source_url, "-vn", "-sn", "-dn", "-map", "0:a:0",
             "-map_metadata", "-1", "-ac", "2", "-ar", "44100"]
+    if _levelling and _level_filter:
+        cmd += ["-af", _level_filter]
     if _AUDIO["format"] == "mp3":
         cmd += ["-codec:a", "libmp3lame", "-b:a", f"{MP3_KBPS}k",
                 "-write_xing", "0", "-id3v2_version", "0", "-write_id3v1", "0", "-f", "mp3"]
@@ -928,8 +981,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": str(e)}, 500)
             return self._json({"signed_in": ok})
         if path == "/options":
-            global _show_shorts
+            global _show_shorts, _levelling
             opts = json.loads(body or "{}")
+            if "levelling" in opts:
+                _levelling = bool(opts["levelling"])
             if "show_shorts" in opts and bool(opts["show_shorts"]) != _show_shorts:
                 _show_shorts = bool(opts["show_shorts"])
                 _STABLE.clear()
@@ -1087,9 +1142,11 @@ def status():
         "node": _find_node(),
         "ffmpeg": _find_ffmpeg(),
         "codec": _AUDIO["format"],
-        "signed_in": signed_in(),
+        "signed_in": signed_in() and not _auth_rejected.is_set(),
+        "sign_in_rejected": _auth_rejected.is_set(),
         "brand_account": bool(_auth.get("pageid")),
         "restart_pending": _restart_pending,
+        "levelling": bool(_levelling and _level_filter),
     }
 
 # ── Main ─────────────────────────────────────────────────────────────────────
@@ -1120,7 +1177,7 @@ def _bind(bind, port):
 
 
 def main():
-    global _show_shorts, _PORT
+    global _show_shorts, _PORT, _levelling
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=9877)
     ap.add_argument("--bind", default="127.0.0.1")
@@ -1130,6 +1187,7 @@ def main():
     ap.add_argument("--ffmpeg", default="")
     ap.add_argument("--node", default="")
     ap.add_argument("--show-shorts", action="store_true")
+    ap.add_argument("--no-levelling", action="store_true")
     args = ap.parse_args()
 
     _set_dirs(args.data_dir)
@@ -1147,6 +1205,7 @@ def main():
     if args.node:
         os.environ["YTV_NODE_OVERRIDE"] = args.node
     _show_shorts = args.show_shorts
+    _levelling = not args.no_levelling
     _PORT = args.port
 
     server = _bind(args.bind, args.port)
@@ -1162,6 +1221,7 @@ def main():
     if not _find_ffmpeg():
         logging.error("ffmpeg not found; install it (e.g. apt install ffmpeg)")
     _detect_codec()
+    _init_level_filter()
     # Sign-in from LMS, passed in the environment (not visible in ps)
     if os.environ.get("YTV_HEADERS"):
         set_auth(os.environ.pop("YTV_HEADERS"))

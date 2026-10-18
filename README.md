@@ -11,6 +11,13 @@ Tap a video to play it, or use Add / Play next to build a queue. Playlists
 (including Watch Later) can be played or added as a whole. Seeking works,
 including in videos several hours long. Shorts and live streams are left out.
 
+**Volume levelling** (on by default) evens out loudness between videos and
+within a video, such as a quiet guest or a loud intro, so you don't have to
+keep reaching for the volume. It uses ffmpeg's `dynaudnorm` filter, tuned
+for speech: pauses and room noise are left alone, but music loses some of
+its dynamics. You can switch it off in the settings. In a test, a loud tech
+video and a talk show 6 dB apart came out 0.3 dB apart.
+
 ## Disclaimer
 
 An independent, unofficial project, not affiliated with or endorsed by
@@ -55,8 +62,14 @@ in the filter and click Home. Click a POST `browse` request, copy its whole
 YouTube Video**. Only the cookie and X-Goog-AuthUser are used; they're kept
 on your server in a file only the LMS user can read.
 
-If the lists say YouTube didn't accept the sign-in, the cookie has expired:
-copy fresh headers the same way.
+If the lists say YouTube no longer accepts the sign-in, the cookie has
+expired or been rotated: copy fresh headers the same way (into the YouTube
+Music plugin's settings if you share its sign-in).
+
+Tip: YouTube regularly rotates the sign-in cookies of a browser you keep
+using, which makes a copied cookie stop working. Copy the headers from a
+**private/incognito window** instead, then close that window without
+signing out; that sign-in stays valid much longer.
 
 ## How it works
 
