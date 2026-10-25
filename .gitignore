@@ -2,3 +2,8 @@ Plugins/YouTubeVideo/__pycache__/
 *.pyc
 *.zip
 dist/
+.env
+.env.*
+*.token
+secrets.yaml
+__pycache__/
